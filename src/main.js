@@ -12,7 +12,7 @@ let hemiLight;
 //         SCENE
 ///////////////////////////
 const scene = new THREE.Scene();
-scene.background = new THREE.Color( 0xcccccc );
+scene.background = new THREE.Color( 0x87CEEB );
 
 ///////////////////////////
 //        CAMERA
@@ -30,8 +30,20 @@ camera.position.y = 2;
 ///////////////////////////
 //       RENDERER
 ///////////////////////////
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+// const shadowMap = new THREE.WebGLShadowMap(renderer);
 renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap; // or any other type of shadow map
+renderer.shadowMap.autoUpdate = false;
+renderer.shadowMap.needsUpdate = true;
+
+// const renderer = new THREE.WebGLRenderer({ antialias: true });
+// const shadowMap = new THREE.WebGLShadowMap(renderer);
+// renderer.shadowMap.enabled = true;
+// renderer.shadowMap.enabled = true;
+// renderer.shadowMap.type = THREE.PCFSoftShadowMap; // or any other type of shadow map
+// renderer.shadowMap.autoUpdate = false;
+// renderer.shadowMap.needsUpdate = true;
 renderer.setSize(window.innerWidth, window.innerHeight);
 // add renderer to HTML document. This is a <canvas> element 
 document.body.appendChild( renderer.domElement );
@@ -46,9 +58,9 @@ document.body.appendChild( renderer.domElement );
 
 // MODEL WITH ANIMATIONS
 const loader = new GLTFLoader();
-loader.load('models/avenger.glb', function (gltf) {
+loader.load('models/car.glb', function (gltf) {
     soldier = gltf.scene;  // sword 3D object is loaded
-    soldier.scale.set(1, 1, 1);
+    soldier.scale.set(2, 2, 2);
     soldier.rotation.y = Math.PI; //-90 degrees around the xaxis
     soldier.castShadow = true;
     scene.add(soldier);
@@ -67,10 +79,10 @@ grassTex.repeat.y = 256;
 let groundTexture = new THREE.MeshStandardMaterial({map:grassTex}); 
 
 const groundGeometry = new THREE.PlaneGeometry(400,400);
-const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff });
-const ground = new THREE.Mesh(groundGeometry, groundTexture);
-ground.position.y = -10;
-ground.rotation.x = -Math.PI/2; //-90 degrees around the xaxis
+groundGeometry.rotateX(Math.PI * -0.5);
+const groundMaterial = new THREE.MeshStandardMaterial({ color: "darkred" });
+const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+ground.position.y = -5;
 ground.doubleSided = true;
 ground.receiveShadow = true;
 scene.add(ground);
@@ -105,15 +117,14 @@ function onDocumentKeyDown(event) {
 //      LIGHT
 ///////////////////////////
 const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(1, 15, 10);
+light.position.set(0,50,0);
+light.target.position.set(0, 0, 0);
 light.castShadow = true;
 scene.add(light);
-const ambientLight = new THREE.AmbientLight( 0xcccccc ); // soft white light
+const ambientLight = new THREE.AmbientLight( 0x404040, 0.5); // soft white light
 scene.add( ambientLight );
 
 
-hemiLight = new THREE.HemisphereLight( "orange", 0x080820, 4);
-scene.add( hemiLight );
 
 
 ///////////////////////////
