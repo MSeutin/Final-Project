@@ -4,8 +4,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 // LOCAL IMPORTS
 
 // VARIABLES
-let soldier;
-let hemiLight;
+let player;
 
 
 ///////////////////////////
@@ -61,13 +60,13 @@ camera.position.z = 5;
 camera.position.y = 2;
 
 // Define a target object that represents the soldier model
-const soldierTarget = {
+const playerTarget = {
     Position: new THREE.Vector3(0, 0, 0),
     Rotation: new THREE.Quaternion()
 };
 
 // Create the third-person camera and pass in the target object
-let thirdPersonCamera = new ThirdPersonCamera({ camera: camera, target: soldierTarget });
+let thirdPersonCamera = new ThirdPersonCamera({ camera: camera, target: playerTarget });
 
 // let thirdPersonCamera = new ThirdPersonCamera({camera: camera});
 
@@ -79,40 +78,24 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 // const shadowMap = new THREE.WebGLShadowMap(renderer);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap; // or any other type of shadow map
-renderer.shadowMap.autoUpdate = false;
+renderer.shadowMap.autoUpdate = true;
 renderer.shadowMap.needsUpdate = true;
-
-// const renderer = new THREE.WebGLRenderer({ antialias: true });
-// const shadowMap = new THREE.WebGLShadowMap(renderer);
-// renderer.shadowMap.enabled = true;
-// renderer.shadowMap.enabled = true;
-// renderer.shadowMap.type = THREE.PCFSoftShadowMap; // or any other type of shadow map
-// renderer.shadowMap.autoUpdate = false;
-// renderer.shadowMap.needsUpdate = true;
 renderer.setSize(window.innerWidth, window.innerHeight);
 // add renderer to HTML document. This is a <canvas> element 
 document.body.appendChild( renderer.domElement );
 
-///////////////////////////
-//      CUBE
-///////////////////////////
-// const geometry = new THREE.BoxGeometry(1,1,1);
-// const material = new THREE.MeshBasicMaterial({ color: 'crimson' });
-// const cube = new THREE.Mesh(geometry, material);
-// scene.add(cube);
-
 // MODEL WITH ANIMATIONS
 const loader = new GLTFLoader();
 loader.load('models/car.glb', function (gltf) {
-    soldier = gltf.scene;  // sword 3D object is loaded
-    soldier.scale.set(2, 2, 2);
-    soldier.rotation.y = Math.PI; //-90 degrees around the x-axis
-    soldier.traverse(function (node){  // traverse through the model elements
+    player = gltf.scene;  // sword 3D object is loaded
+    player.scale.set(2, 2, 2);
+    player.rotation.y = Math.PI; //-90 degrees around the x-axis
+    player.traverse(function (node){  // traverse through the model elements
         if(node.isMesh){  // check if it is a mesh
             node.castShadow = true;
         }
     });
-    scene.add(soldier);
+    scene.add(player);
 });
 
 ///////////////////////////
@@ -120,10 +103,8 @@ loader.load('models/car.glb', function (gltf) {
 ///////////////////////////
 // add ground 
 let grassTex = new THREE.TextureLoader().load( 'images/bump.jpg' );
-grassTex.wrapS = THREE.RepeatWrapping; 
-grassTex.wrapT = THREE.RepeatWrapping; 
-grassTex.repeat.x = 256; 
-grassTex.repeat.y = 256; 
+const background = new THREE.TextureLoader().load('images/stars.jpg');
+scene.background = background;
 let groundTexture = new THREE.MeshStandardMaterial({map: grassTex}); 
 
 const groundGeometry = new THREE.PlaneGeometry(400, 400);
@@ -142,37 +123,33 @@ document.addEventListener("keydown", onDocumentKeyDown, false);
 function onDocumentKeyDown(event) {
     let keyCode = event.which;
     console.log(keyCode);
-    if (keyCode == 38) {
+    if (keyCode == 38 || keyCode == 75) {
         // forward
-        soldier.position.z += 1;
-        soldierTarget.Position.copy(soldier.position);
-        soldierTarget.Rotation.copy(soldier.quaternion);    
+        player.position.z += 1;
+        playerTarget.Position.copy(player.position);
+        playerTarget.Rotation.copy(player.quaternion);    
         thirdPersonCamera.Update();
-    } else if (keyCode == 40) {
+    } else if (keyCode == 40 || keyCode == 74) {
         // backward
-        soldier.position.z -= 1;
-        soldierTarget.Position.copy(soldier.position);
-        soldierTarget.Rotation.copy(soldier.quaternion);    
+        player.position.z -= 1;
+        playerTarget.Position.copy(player.position);
+        playerTarget.Rotation.copy(player.quaternion);    
         thirdPersonCamera.Update();
-    } else if (keyCode == 37) {
+    } else if (keyCode == 37 || keyCode == 72) {
         // left
-        soldier.position.x -= 1;
-        soldierTarget.Position.copy(soldier.position);
-        soldierTarget.Rotation.copy(soldier.quaternion);    
+        player.position.x -= 1;
+        playerTarget.Position.copy(player.position);
+        playerTarget.Rotation.copy(player.quaternion);    
         thirdPersonCamera.Update();
-    } else if (keyCode == 39) {
+    } else if (keyCode == 39 || keyCode == 76) {
         // right
-        soldier.position.x += 1;
-        soldierTarget.Position.copy(soldier.position);
-        soldierTarget.Rotation.copy(soldier.quaternion);    
+        player.position.x += 1;
+        playerTarget.Position.copy(player.position);
+        playerTarget.Rotation.copy(player.quaternion);    
         thirdPersonCamera.Update();
     } else if (keyCode == 32) {
         // spacebar to recenter
-        soldier.position.x = 0.0;
-        soldier.position.y = 0.0;
-        soldierTarget.Position.copy(soldier.position);
-        soldierTarget.Rotation.copy(soldier.quaternion);
-        thirdPersonCamera.Update();
+        location.reload();
     }
 }
 
