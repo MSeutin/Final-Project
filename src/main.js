@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 // LOCAL IMPORTS
+import ThirdPersonCamera from './components/thirdPersonCamera';
 
 // VARIABLES
 let player;
@@ -13,63 +14,22 @@ let player;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color( 0x87CEEB );
 
-///////////////////////////
-//        CAMERA
-///////////////////////////
-
-// third person camera
-class ThirdPersonCamera{
-    constructor(params){ // camera is passed
-        this._params = params;
-        this._camera = params.camera;
-        this._currentPosition = new THREE.Vector3();
-        this._currentLookat = new THREE.Vector3();
-    }
-    _CalculateIdealOffset(){
-        const idealOffset = new THREE.Vector3(-3, 4, -7);
-        idealOffset.applyQuaternion(this._params.target.Rotation);
-        idealOffset.add(this._params.target.Position);
-        return idealOffset;
-    }
-
-    _CalculateIdealLookat(){
-        const idealLookat = new THREE.Vector3(0, 2, 10);
-        idealLookat.applyQuaternion(this._params.target.Rotation);
-        idealLookat.add(this._params.target.Position);
-        return idealLookat;
-    }
-
-    Update(){
-        const idealOffset = this._CalculateIdealOffset(); 
-        const idealLookat = this._CalculateIdealLookat();
-
-        this._currentPosition.copy(idealOffset);
-        this._currentLookat.copy(idealLookat);
-        this._camera.position.copy(this._currentPosition);
-        this._camera.lookAt(this._currentLookat);
-    }
-}
-
-const fov = 75; // field of view
-const aspect = window.innerWidth / window.innerHeight;
-const near = 1; // near clipping plane
-const far = 100; // far clipping plane
-const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-// object are created at ( 0, 0, 0 ), move camera back to view scene
-camera.position.z = 5;
-camera.position.y = 2;
-
-// Define a target object that represents the soldier model
+// Define a target object that represents the player
 const playerTarget = {
     Position: new THREE.Vector3(0, 0, 0),
     Rotation: new THREE.Quaternion()
 };
 
+///////////////////////////
+//        CAMERA
+///////////////////////////
+const fov = 75; // field of view
+const aspect = window.innerWidth / window.innerHeight;
+const near = 1; // near clipping plane
+const far = 100; // far clipping plane
+const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 // Create the third-person camera and pass in the target object
 let thirdPersonCamera = new ThirdPersonCamera({ camera: camera, target: playerTarget });
-
-// let thirdPersonCamera = new ThirdPersonCamera({camera: camera});
-
 
 ///////////////////////////
 //       RENDERER
@@ -101,14 +61,14 @@ loader.load('models/car.glb', function (gltf) {
 ///////////////////////////
 //       GROUND
 ///////////////////////////
-// add ground 
-let grassTex = new THREE.TextureLoader().load( 'images/bump.jpg' );
+// add background
 const background = new THREE.TextureLoader().load('images/stars.jpg');
 scene.background = background;
+// add ground 
+let grassTex = new THREE.TextureLoader().load( 'images/bump.jpg' );
 let groundTexture = new THREE.MeshStandardMaterial({map: grassTex}); 
 
-const groundGeometry = new THREE.PlaneGeometry(400, 400);
-// const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff });
+const groundGeometry = new THREE.PlaneGeometry(300, 300);
 
 const ground = new THREE.Mesh(groundGeometry, groundTexture);
 ground.position.y = -2;
@@ -117,21 +77,26 @@ ground.doubleSided = true;
 ground.receiveShadow = true;
 scene.add(ground);
 
+// Set Original Positions
+// playerTarget.Position.copy(player.position);
+// playerTarget.Rotation.copy(player.quaternion);
+
 
 // movement
 document.addEventListener("keydown", onDocumentKeyDown, false);
 function onDocumentKeyDown(event) {
     let keyCode = event.which;
     console.log(keyCode);
+    // 75 is letter k for forward
     if (keyCode == 38 || keyCode == 75) {
         // forward
-        player.position.z += 1;
+        player.position.z -= 1;
         playerTarget.Position.copy(player.position);
         playerTarget.Rotation.copy(player.quaternion);    
         thirdPersonCamera.Update();
     } else if (keyCode == 40 || keyCode == 74) {
         // backward
-        player.position.z -= 1;
+        player.position.z += 1;
         playerTarget.Position.copy(player.position);
         playerTarget.Rotation.copy(player.quaternion);    
         thirdPersonCamera.Update();
@@ -179,6 +144,8 @@ function animate(){
     requestAnimationFrame(animate);
     // cube.rotation.x += 0.01;
     // cube.rotation.y += 0.01;
+    thirdPersonCamera.Update();
+    playerTarget.Rotation.copy(player.quaternion); 
     renderer.render(scene, camera);
 }
 
