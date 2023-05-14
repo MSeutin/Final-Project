@@ -26,7 +26,9 @@ export default class ThirdPersonCamera{
         const idealOffset = this._CalculateIdealOffset(); 
         const idealLookat = this._CalculateIdealLookat();
 
-        this._currentPosition.copy(idealOffset);
+        const t = 0.1;
+        // linear interpolation : smoother camera
+        this._currentPosition.lerp(idealOffset, t);
         this._currentLookat.copy(idealLookat);
         this._camera.position.copy(this._currentPosition);
         this._camera.lookAt(this._currentLookat);
