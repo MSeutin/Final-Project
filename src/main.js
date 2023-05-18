@@ -1,6 +1,8 @@
 import * as THREE from 'three';
-import TWEEN from '@tweenjs/tween.js'
+import { TTFLoader } from 'three/examples/jsm/loaders/TTFLoader';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 // LOCAL IMPORTS
 import ThirdPersonCamera from './components/thirdPersonCamera';
@@ -50,7 +52,7 @@ document.body.appendChild( renderer.domElement );
 const loader = new GLTFLoader();
 loader.load('models/car.glb', function (gltf) {
   player = gltf.scene;  // sword 3D object is loaded
-  player.scale.set(2, 2, 2);
+  player.scale.set(3, 3, 3);
   player.rotation.y = Math.PI; //-90 degrees around the x-axis
 
   player.traverse(function (node){  // traverse through the model elements
@@ -76,8 +78,6 @@ function movePlayerForward(playerPosition) {
   player.position.copy(playerPosition); // update the player's position
 }
 
-let moveForward = false;
-
 // movement
 document.addEventListener("keydown", onDocumentKeyDown, false);
 function onDocumentKeyDown(event) {
@@ -86,12 +86,8 @@ function onDocumentKeyDown(event) {
   // 75 is letter k for forward
   switch (keyCode) {
     case 38: case 75: // forward
-      player.position.z -= 0.3;
+      player.position.z -= 0.4;
       break;
-      
-    // case 13:
-    //   moveForward = true;
-    //   break;
       
     case 40: case 74: // backward
       player.position.z += 0.1;
@@ -137,14 +133,29 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.25;
 
 ///////////////////////////
+//      TEXT
+///////////////////////////
+const fontLoader = new FontLoader();
+fontLoader.load(
+  'node_modules/three/examples/fonts/droid/droid_serif_regular.typeface.json',
+  (droidFont) => {
+    const textGeometry = new TextGeometry('Anu', {
+      height: 4,
+      size: 10,
+      font: droidFont,
+    });
+    const textMaterial = new THREE.MeshNormalMaterial();
+    const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+    textMesh.position.x = -19;
+    textMesh.position.y = 2;
+  }
+)
+
+///////////////////////////
 //       RENDER
 ///////////////////////////
 function animate(){
   requestAnimationFrame(animate);
-  // if (moveForward) {
-  //     player.position.z -= 0.1; // Move player forward
-  // }
-  
   player.position.z -= 0.1;
   playerTarget.Position.copy(player.position);
   playerTarget.Rotation.copy(player.quaternion); 
